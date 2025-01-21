@@ -20,6 +20,8 @@ let localStream;
 
 const signaling = new BroadcastChannel('webrtc');
 signaling.onmessage = e => {
+  console.log("signaling got message", e.data.type);
+  console.log("data", e.data);
   if (!localStream) {
     console.log('not ready yet');
     return;
@@ -81,8 +83,11 @@ async function hangup() {
 };
 
 function createPeerConnection() {
+  console.log("function createPeerConnection");
   pc = new RTCPeerConnection();
   pc.onicecandidate = e => {
+    console.log("pc.onicecandidate with event e", e);
+    console.log("e.candidate", e.candidate);
     const message = {
       type: 'candidate',
       candidate: null,
@@ -94,11 +99,16 @@ function createPeerConnection() {
     }
     signaling.postMessage(message);
   };
-  pc.ontrack = e => remoteVideo.srcObject = e.streams[0];
+  pc.ontrack = e => 
+  {
+    console.log("pc.ontrack with event e", e);
+    remoteVideo.srcObject = e.streams[0];
+  }
   localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 }
 
 async function makeCall() {
+  console.log("function makeCall" )
   await createPeerConnection();
 
   const offer = await pc.createOffer();
@@ -107,6 +117,7 @@ async function makeCall() {
 }
 
 async function handleOffer(offer) {
+  console.log("function handleOffer" , offer)
   if (pc) {
     console.error('existing peerconnection');
     return;
@@ -120,6 +131,7 @@ async function handleOffer(offer) {
 }
 
 async function handleAnswer(answer) {
+  console.log("function handleAnswer" , answer)
   if (!pc) {
     console.error('no peerconnection');
     return;
@@ -128,6 +140,7 @@ async function handleAnswer(answer) {
 }
 
 async function handleCandidate(candidate) {
+  console.log("function handleCandidate" , candidate)
   if (!pc) {
     console.error('no peerconnection');
     return;
